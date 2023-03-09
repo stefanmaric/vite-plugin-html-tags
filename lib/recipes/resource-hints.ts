@@ -1,33 +1,39 @@
 import { lookup } from 'mime-types'
-import type { HtmlTagDescriptor } from 'vite'
+import { createFilter } from 'vite'
+import type { HtmlTagDescriptor, FilterPattern } from 'vite'
 import type { TagGenerator, TagGeneratorParams } from '../plugin.js'
-
-export type Attributes = HtmlTagDescriptor['attrs'] & { rel: HintType }
-
-export type AttributeBuilder = (path: string) => Attributes
 
 /**
  * Defined by: https://www.w3.org/TR/resource-hints/
  */
 export type HintType = 'dns-prefetch' | 'preconnect' | 'prefetch' | 'preload'
 
+/**
+ * Just like Vite's HTMLTagDescriptor attributes, but specific for <link /> tags which require a
+ * rel attribute.
+ */
+export type ResourceHintAttributes = HtmlTagDescriptor['attrs'] & { rel: HintType }
+
+export type AttributeBuilder = (path: string) => ResourceHintAttributes
+
 export interface ResourceHintsMatcher {
   /**
-   * Regular Expression to match file paths in the final build output.
+   * Pattern to match file paths in the final build output. Supports the same kind of patterns other
+   * vite options and plugins accept.
    */
-  files: RegExp
+  files: Exclude<FilterPattern, null>
   /**
-   * Attributes to include in the Link tag. `as` and `type` are inferred by default but will be
+   * Attributes to include in the <link /> tag. `as` and `type` are inferred by default but will be
    * overwritten if set here. Alternatively, you can pass an AttributeBuilder, which takes a string
    * as a representation of the full path of the file in the final build output and returns an
    * Attributes object.
    */
-  attrs: Attributes | ((path: string) => Attributes)
+  attrs: ResourceHintAttributes | ((path: string) => ResourceHintAttributes)
 
   /**
    * Regular Expression to exclude files. Takes precedence over the `files` option.
    */
-  exclude?: RegExp
+  exclude?: FilterPattern
   injectTo?: HtmlTagDescriptor['injectTo']
 }
 
@@ -87,18 +93,18 @@ export const mimeToDest = (mimeType?: string): string | undefined => {
   return undefined
 }
 
-const isAttributeSet = <A extends Attributes, K extends string>(
-  attrs: Attributes,
+const isAttributeSet = <A extends HtmlTagDescriptor['attrs'], K extends string>(
+  attrs: A,
   key: K,
-): attrs is A & Exclude<Attributes, undefined> & Record<K, string> => {
-  if (attrs && key in attrs && typeof attrs[key] === 'string' && attrs[key]) {
+): attrs is A & ResourceHintAttributes & Record<K, string> => {
+  if (typeof attrs === 'object' && key in attrs && typeof attrs[key] === 'string' && attrs[key]) {
     return true
   }
 
   return false
 }
 
-export const resourceHints = (
+export const buildResourceHints = (
   options: ResourceHintsMatcher | ResourceHintsMatcher[],
 ): TagGenerator => {
   const matchers = Array.isArray(options) ? options : [options]
@@ -112,11 +118,13 @@ export const resourceHints = (
 
     const tags = [] as HtmlTagDescriptor[]
 
-    for (const filename of Object.keys(bundle)) {
-      for (const matcher of matchers) {
+    for (const matcher of matchers) {
+      const filter = createFilter(matcher.files, matcher.exclude, { resolve: false })
+
+      for (const filename of Object.keys(bundle)) {
         const fullpath = `${base}${filename}`
 
-        if (!matcher.files.test(fullpath) || matcher.exclude?.test(fullpath)) {
+        if (!filter(fullpath)) {
           continue
         }
 
@@ -137,7 +145,7 @@ export const resourceHints = (
             as: destType,
             ...attributes,
           },
-          injectTo: matcher.injectTo ?? 'head',
+          injectTo: matcher.injectTo ?? undefined,
         })
       }
     }

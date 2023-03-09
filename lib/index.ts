@@ -7,11 +7,11 @@ export type {
   TagGeneratorResult,
 } from './plugin.js'
 
-export { resourceHints } from './recipes/resource-hints.js'
+export { buildResourceHints } from './recipes/resource-hints.js'
 
 export type {
   AttributeBuilder,
-  Attributes,
   HintType,
+  ResourceHintAttributes,
   ResourceHintsMatcher,
 } from './recipes/resource-hints.js'

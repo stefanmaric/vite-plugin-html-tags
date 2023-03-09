@@ -4,7 +4,7 @@
  * @param {T} obj - The object to check.
  * @param {Key} key - The property key to check.
  * @returns {obj is Record<Key, unknown> & T} - Returns `true` if the object has the property, `false` otherwise.
- * 
+ *
  * @example
  * const obj = { name: 'John', age: 30 }
  * const hasName = has(obj, 'name') //=> true
@@ -12,7 +12,7 @@
  */
 export const has = <T extends object, Key extends PropertyKey>(
   obj: T,
-  key: Key
+  key: Key,
 ): obj is Record<Key, unknown> & T => Object.prototype.hasOwnProperty.call(obj, key)
 
 /**
@@ -33,7 +33,7 @@ export const has = <T extends object, Key extends PropertyKey>(
  */
 export const partition = <T, L extends T = T, R extends T = T>(
   list: T[],
-  predicate: (arg: T) => boolean
+  predicate: (arg: T) => boolean,
 ): [L[], R[]] => {
   const result: [L[], R[]] = [[], []]
 
@@ -66,7 +66,7 @@ export const partition = <T, L extends T = T, R extends T = T>(
  */
 export const pick = <T extends Record<PropertyKey, unknown>, K extends keyof T>(
   obj: T,
-  keys: K[]
+  keys: K[],
 ): Pick<T, K> => {
   const result = {} as Pick<T, K>
 

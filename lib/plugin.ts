@@ -20,12 +20,39 @@ export interface TagGeneratorParams {
  */
 export type TagGeneratorResult = HtmlTagDescriptor | HtmlTagDescriptor[] | null | undefined
 
+/**
+ * A function that generates HTML tag descriptors to be injected into HTML files based on Vite's
+ * build information.
+ */
 export type TagGenerator = (
   params: TagGeneratorParams,
 ) => Promise<TagGeneratorResult> | TagGeneratorResult
 
 export type PluginHtmlTagsSelection = HtmlTagDescriptor | TagGenerator
 
+/**
+ * Vite Plugin to inject Tags to HTML entries.
+ *
+ * @example
+ * import react from "@vitejs/plugin-react-swc"
+ * import { defineConfig } from "vite"
+ * import { PluginHtmlTags } from "vite-plugin-html-tags"
+ *
+ * export default defineConfig({
+ *   plugins: [
+ *     react(),
+ *     PluginHtmlTags(({ env }) => [
+ *       {
+ *         tag: "link",
+ *         attrs: {
+ *           rel: "preconnect",
+ *           href: env.VITE_API_URL,
+ *         },
+ *       },
+ *     ]),
+ *   ],
+ * })
+ */
 export const PluginHtmlTags = (
   generators: PluginHtmlTagsSelection | PluginHtmlTagsSelection[],
 ): Plugin => {
@@ -45,14 +72,14 @@ export const PluginHtmlTags = (
     },
     transformIndexHtml: {
       enforce: 'post',
-      handler(_, ctx) {
-        return [
+      async handler(_, ctx) {
+        return Promise.all([
           ...fixed,
           ...(dynamic
             .map((generator) => generator({ ...params, ctx }))
             .flat()
             .filter(Boolean) as HtmlTagDescriptor[]),
-        ]
+        ])
       },
     },
   }
