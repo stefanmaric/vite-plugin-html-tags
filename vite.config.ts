@@ -11,13 +11,20 @@ export default defineConfig({
     target: 'esnext',
     minify: false,
     lib: {
-      entry: './lib/index.ts',
-      name: 'vite-plugin-html-tags',
-      fileName: 'vite-plugin-html-tags',
+      entry: [
+        './lib/index.ts',
+        './lib/plugin.ts',
+        './lib/index.ts',
+        './lib/recipes/resource-hints.ts',
+      ],
     },
     rollupOptions: {
       external: isExternal,
     },
   },
-  plugins: [dts()],
+  plugins: [
+    dts({
+      exclude: ['node_module/**', 'vite.config.ts'],
+    }),
+  ],
 })
