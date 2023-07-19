@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-html-tags",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Flexible framework to add tags to HTML entries and recipes for resource hints and more",
   "type": "module",
   "main": "./dist/index.cjs",
