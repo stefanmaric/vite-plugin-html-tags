@@ -4,7 +4,7 @@
     "useDefineForClassFields": true,
     "module": "ESNext",
     "lib": ["ESNext"],
-    "moduleResolution": "nodenext",
+    "moduleResolution": "Bundler",
     "strict": true,
     "isolatedModules": true,
     "esModuleInterop": true,

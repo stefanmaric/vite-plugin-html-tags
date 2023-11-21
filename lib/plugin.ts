@@ -71,7 +71,7 @@ export const PluginHtmlTags = (
       params = pick(resolved, ['base', 'env', 'mode', 'command', 'ssr'])
     },
     transformIndexHtml: {
-      enforce: 'post',
+      order: 'post',
       async handler(_, ctx) {
         return Promise.all([
           ...fixed,

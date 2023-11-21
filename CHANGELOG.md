@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Upgrade all dependencies and support vite v5
 
 ## v0.2.0 - 2023-07-19
 
